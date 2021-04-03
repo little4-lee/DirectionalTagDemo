@@ -1,0 +1,4 @@
+include ':aidl'
+include ':server'
+include ':client'
+rootProject.name = "DirectionalTagDemo"
