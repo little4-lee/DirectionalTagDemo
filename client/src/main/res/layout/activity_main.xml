@@ -9,10 +9,31 @@
     tools:context=".MainActivity">
 
     <Button
-        android:onClick="clickBtn"
         android:id="@+id/btnVerityCallbck"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="clickBtn"
         android:text="registerCallback" />
+
+    <Button
+        android:id="@+id/btnTransIn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="clickBtn"
+        android:text="trans in" />
+
+    <Button
+        android:id="@+id/btnTransOut"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="clickBtn"
+        android:text="trans out" />
+
+    <Button
+        android:id="@+id/btnTransInOut"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="clickBtn"
+        android:text="trans inout" />
 
 </LinearLayout>

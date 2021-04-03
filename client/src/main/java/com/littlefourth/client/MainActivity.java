@@ -1,5 +1,6 @@
 package com.littlefourth.client;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,11 +15,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.littlefourth.aidl.ICallback;
 import com.littlefourth.aidl.IController;
+import com.littlefourth.aidl.State;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.littlefourth.aidl.TAG.T;
+
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "directional tag";
     private AtomicBoolean isServiceBind = new AtomicBoolean(false);
 
     @Override
@@ -31,14 +34,14 @@ public class MainActivity extends AppCompatActivity {
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d(TAG, "onServiceConnected");
+            Log.d(T, "onServiceConnected");
             isServiceBind.set(true);
             controller = IController.Stub.asInterface(service);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.d(TAG, "onServiceDisconnected");
+            Log.d(T, "onServiceDisconnected");
             isServiceBind.set(false);
         }
     };
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
+    @SuppressLint("NonConstantResourceId")
     public void clickBtn(View view) {
         switch (view.getId()) {
             case R.id.btnVerityCallbck:
@@ -60,20 +64,77 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
+            case R.id.btnTransIn:
+                if (isServiceBind.get()) {
+                    transIn();
+                }
+                break;
+            case R.id.btnTransOut:
+                if (isServiceBind.get()) {
+                    transOut();
+                }
+                break;
+
+            case R.id.btnTransInOut:
+                if (isServiceBind.get()) {
+                    transInOut();
+                }
+                break;
+
             default:
                 //do nothing
                 break;
         }
     }
 
+    private void transInOut() {
+        if (controller != null) {
+            try {
+                Log.d(T, "caller value before transInOut(): " + stateInOut.getValue());
+                controller.transInOut(stateInOut);
+                Log.d(T, "caller value after transInOut(): " + stateInOut.getValue());
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void transOut() {
+        if (controller != null) {
+            try {
+                Log.d(T, "caller value before transOut(): " + stateOut.getValue());
+                controller.transOut(stateOut);
+                Log.d(T, "caller value after transOut(): " + stateOut.getValue());
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void transIn() {
+        if (controller != null) {
+            try {
+                Log.d(T, "caller value before transIn(): " + stateIn.getValue());
+                controller.transIn(stateIn);
+                Log.d(T, "caller value after transIn(): " + stateIn.getValue());
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private IController controller;
-    private ICallback callback = new ICallback.Stub() {
+    private final ICallback callback = new ICallback.Stub() {
 
         @Override
         public void onResult(int result) throws RemoteException {
-            Log.d(TAG, "client onResult: " + result);
+            Log.d(T, "client onResult: " + result);
         }
     };
+
+    private final State stateIn = new State(1);
+    private final State stateOut = new State(1);
+    private final State stateInOut = new State(1);
 
     private void registerCallback() {
         if (controller != null) {
