@@ -10,7 +10,6 @@ import com.littlefourth.aidl.ICallback;
 import com.littlefourth.aidl.IController;
 import com.littlefourth.aidl.State;
 
-import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -37,7 +36,7 @@ public class AidlService extends Service {
     private ICallback callback;
     private IController controller;
 
-    private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
+    private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -76,11 +75,6 @@ public class AidlService extends Service {
                     Log.d(T, "callee set value to " + newValue);
                     state.setValue(newValue);
                     return 3;
-                }
-
-                @Override
-                public int testArray(List<String> arr) throws RemoteException {
-                    return 0;
                 }
 
             };

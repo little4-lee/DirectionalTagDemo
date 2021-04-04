@@ -9,5 +9,4 @@ interface IController {
     int transIn(in State state);
     int transOut(out State state);
     int transInOut(inout State state);
-    int testArray(inout List<String> arr);
 }
