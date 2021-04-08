@@ -14,9 +14,12 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.littlefourth.aidl.ICallback;
+import com.littlefourth.aidl.ICallbackContainer;
 import com.littlefourth.aidl.IController;
 import com.littlefourth.aidl.State;
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.littlefourth.aidl.TAG.T;
@@ -57,13 +60,22 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("NonConstantResourceId")
     public void clickBtn(View view) {
         switch (view.getId()) {
-            case R.id.btnVerityCallbck:
-                // TODO: 2021/4/3
+            case R.id.btnVerityCallback:
                 if (isServiceBind.get()) {
                     registerCallback();
                 }
                 break;
+            case R.id.btnVerityCallbackAsync:
+                if (isServiceBind.get()) {
+                    registerCallbackAsync();
+                }
+                break;
 
+            case R.id.btnVerityCallbackContainer:
+                if (isServiceBind.get()) {
+                    registerCallbackContainer();
+                }
+                break;
             case R.id.btnTransIn:
                 if (isServiceBind.get()) {
                     transIn();
@@ -84,6 +96,26 @@ public class MainActivity extends AppCompatActivity {
             default:
                 //do nothing
                 break;
+        }
+    }
+
+    private void registerCallbackContainer() {
+        if (controller != null) {
+            try {
+                controller.registerCallbackContainer(container);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void registerCallbackAsync() {
+        if (controller != null) {
+            try {
+                controller.registerAsync(callbackAsync);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -128,7 +160,41 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onResult(int result) throws RemoteException {
-            Log.d(T, "client onResult: " + result);
+            Log.d(T, "sync client onResult: " + result);
+            Log.d(T, "thread: " + Thread.currentThread().getName());
+        }
+    };
+
+    private final ICallback callbackAsync =  new ICallback.Stub() {
+        @Override
+        public void onResult(int result) throws RemoteException {
+            Log.d(T, "async client onResult: " + result);
+            Log.d(T, "thread: " + Thread.currentThread().getName());
+        }
+    };
+
+    private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(1);
+
+    private ICallback remoteCallback;
+    private Runnable remoteCommand = new Runnable() {
+        @Override
+        public void run() {
+            if (remoteCallback != null) {
+                try {
+                    remoteCallback.onResult(3);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+    private final ICallbackContainer container = new ICallbackContainer.Stub() {
+        @Override
+        public void addCallback(ICallback callback) throws RemoteException {
+            remoteCallback = callback;
+            Log.d(T, "client addCallback, thread: " + Thread.currentThread().getName());
+            remoteCommand.run();
+            executorService.schedule(remoteCommand, 2, TimeUnit.SECONDS);
         }
     };
 
